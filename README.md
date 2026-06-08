@@ -94,32 +94,46 @@ The retrieval layer also applies a lightweight course-aware metadata filter when
 
 ## Grounded Generation
 
-<!-- Explain how your system enforces grounding — how does it prevent the LLM from answering
-     beyond the retrieved documents?
-     Describe both your system prompt (what instruction you gave the model) and any structural
-     choices (e.g., how you formatted the context, whether you filtered low-relevance chunks).
-     Do not just say "I told it to use the documents" — show the actual instruction or explain
-     the mechanism. -->
+The Milestone 5 query interface lives in `ask.py`. It retrieves the top 5 chunks with `retrieval.py`, formats each chunk as a numbered source label such as `[S1]`, sends those labeled excerpts to Groq's `llama-3.3-70b-versatile`, and prints the generated answer plus the retrieved source list.
 
-**System prompt grounding instruction:**
+```bash
+python3 retrieval.py index
+python3 ask.py "Is ML4T a good first OMSCS course?"
+python3 ask.py evaluate
+```
 
-**How source attribution is surfaced in the response:**
+Use `--dry-run` to inspect the retrieved context and prompt without making a Groq API call:
+
+```bash
+python3 ask.py --dry-run "Is ML4T a good first OMSCS course?"
+```
+
+**System prompt grounding instruction:** The system prompt includes these grounding rules:
+
+```text
+- Answer only from the retrieved source excerpts in the user message.
+- Do not use outside knowledge, guesses, or unstated assumptions.
+- If the excerpts do not contain enough evidence, say that the retrieved documents do not contain enough information.
+- Summarize patterns across sources instead of treating one student's review as universal truth.
+- Cite every factual claim about courses with source labels like [S1] or [S2].
+- End with a short "Sources" section listing the source labels you used.
+```
+
+**How source attribution is surfaced in the response:** `ask.py` passes each retrieved chunk to the model with its label, chunk ID, distance, source name, course/topic, URL, and excerpt. The generated answer is required to cite those labels inline. After the answer, the CLI prints the full retrieved source list so a reader can map `[S1]` back to the original source URL and chunk ID.
+
+**Live generation status:** I ran `python3 ask.py evaluate` with a Groq API key stored in the ignored local `.env` file. Full generated answers and retrieved sources are saved in `documents/generation_results.md`.
 
 ---
 
 ## Evaluation Report
 
-<!-- Run your 5 test questions from planning.md through your system and record the results.
-     Be honest — a partially accurate or inaccurate result that you explain well is more
-     valuable than a suspiciously perfect result. -->
-
 | # | Question | Expected answer | System response (summarized) | Retrieval quality | Response accuracy |
 |---|----------|-----------------|------------------------------|-------------------|-------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | What do student reviews say about taking CS 7641 Machine Learning while working full-time? | The answer should say ML is high workload and stressful, especially because of assignments and grading uncertainty, while noting reviews vary. | The system said ML can be challenging while working full-time, cited 14-20 hour/week retrieved workloads, mentioned heavy reports/quizzes, mixed rewarding vs. frustrating experiences, and recommended planning time/start early. | Relevant | Partially accurate |
+| 2 | Is Machine Learning for Trading a reasonable first OMSCS AI/ML course, and what should a new student watch out for? | The answer should say ML4T can be a gentler first AI/ML course, but students warn about reports, project cadence, hidden tests/rubrics, and delayed feedback. | The system said ML4T can be reasonable as a first course, cited the Reddit first-course thread and OMSCentral reviews, and warned that workload varies by project and exams can be difficult. | Relevant | Partially accurate |
+| 3 | What background do students recommend before taking Artificial Intelligence? | The answer should mention Python/numpy, probability/statistics, linear algebra, algorithms/search, starting early, and time-consuming exams/projects. | The system emphasized Bayesian probability, linear algebra, programming, data structures, algorithms, discrete math, multivariable calculus, and data science. It did not clearly mention starting early or the time burden. | Relevant | Partially accurate |
+| 4 | How do students describe Knowledge-Based AI compared with more engineering-oriented AI/ML courses? | The answer should describe KBAI as more conceptual, writing-heavy, cognitive-science/human-reasoning oriented, with projects and participation rather than pure engineering. | The system described KBAI as focused on AI agents that think like humans, overlapping with cognitive science/philosophy, and balancing coding projects, writing, psychology, and philosophy. | Relevant | Accurate |
+| 5 | What changed or frustrated students in recent Natural Language Processing reviews? | The answer should mention proctored/closed-book assessments, mixed reactions to Meta lectures, TA/course-policy changes, and praise for the main professor's lectures. | The system cited poor homework instructions, room scans for weekly quizzes, weak Meta lectures, difficult tests, and still noted praise for Dr. Reidl's lectures and course material. | Relevant | Accurate |
 
 **Retrieval quality:** Relevant / Partially relevant / Off-target  
 **Response accuracy:** Accurate / Partially accurate / Inaccurate
@@ -128,57 +142,34 @@ The retrieval layer also applies a lightweight course-aware metadata filter when
 
 ## Failure Case Analysis
 
-<!-- Identify at least one question where retrieval or generation did not work as expected.
-     Write a specific explanation of *why* it failed, tied to a part of the pipeline.
+**Question that failed:** What background do students recommend before taking Artificial Intelligence?
 
-     "The answer was wrong" is not an explanation.
+**What the system returned:** The answer was useful but incomplete. It correctly mentioned probability, Bayesian probability, linear algebra, programming, data structures, algorithms, discrete math, multivariable calculus, and data science. It did not mention some expected practical advice from the evaluation plan, especially starting early and the time-consuming exam/project workload.
 
-     "The relevant information was split across a chunk boundary, so retrieval returned
-     only half the context — the model didn't have enough to answer correctly" is an explanation.
+**Root cause (tied to a specific pipeline stage):** Retrieval was relevant, but the top chunks leaned toward prerequisite/background descriptions rather than study-strategy details. The generation prompt asked for a concise answer, so the model compressed the evidence into prerequisite topics and dropped some workflow advice that appeared in the retrieved context, such as starting early and exams taking significant time.
 
-     "The embedding model treated the professor's nickname as out-of-vocabulary and returned
-     results from an unrelated review" is an explanation. -->
-
-**Question that failed:**
-
-**What the system returned:**
-
-**Root cause (tied to a specific pipeline stage):**
-
-**What you would change to fix it:**
+**What you would change to fix it:** I would add a second retrieval pass for practical workload/study-advice terms when a question asks about "background" or "before taking" a course. I would also make the generation prompt explicitly ask for both prerequisite knowledge and preparation/workload advice when the retrieved context contains both.
 
 ---
 
 ## Spec Reflection
 
-<!-- Reflect on how planning.md shaped your implementation.
-     Answer both questions with at least 2–3 sentences each. -->
+**One way the spec helped you during implementation:** `planning.md` made the implementation much more direct because the document choices, chunk metadata, embedding model, top-k value, and evaluation questions were already decided before coding. That meant each milestone could be built as a small piece of the planned architecture instead of changing direction mid-project. The five evaluation questions were especially helpful because they revealed concrete retrieval behavior, like the need for course-aware filtering when the phrase "Artificial Intelligence" could otherwise overlap with KBAI.
 
-**One way the spec helped you during implementation:**
-
-**One way your implementation diverged from the spec, and why:**
+**One way your implementation diverged from the spec, and why:** The chunking plan originally expected paragraph-aware splitting for long reviews, but the OMSCentral HTML often collapsed review bodies into dense text without reliable paragraph boundaries. I changed the fallback splitter to sentence-aware token windows so long reviews still stayed readable and below the token cap. I also added course-aware metadata filtering during retrieval, which was not in the original plan, because the first retrieval tests showed that similar course names could otherwise pull adjacent but wrong courses.
 
 ---
 
 ## AI Usage
 
-<!-- Describe at least 2 specific instances where you used an AI tool during this project.
-     For each: what did you give the AI as input, what did it produce, and what did you
-     change, override, or direct differently?
-
-     "I used Claude to help me code" is not sufficient.
-     "I gave Claude my Chunking Strategy section from planning.md and asked it to implement
-     chunk_text(). It returned a function using a fixed character split. I overrode the
-     chunk size from 500 to 200 because my documents are short reviews, not long guides." -->
-
 **Instance 1**
 
-- *What I gave the AI:*
-- *What it produced:*
-- *What I changed or overrode:*
+- *What I gave the AI:* The Domain, Document Sources, and Chunking Strategy sections from `planning.md`.
+- *What it produced:* Python code for fetching OMSCentral and Reddit sources, extracting review/comment text, saving raw and cleaned documents, and writing chunk metadata to `documents/chunks.jsonl`.
+- *What I changed or overrode:* I changed the long-review splitting from paragraph-aware to sentence-aware because the scraped HTML did not preserve paragraph boundaries reliably. I also added course/source text directly into each chunk so retrieval would have that context inside the embedding text.
 
 **Instance 2**
 
-- *What I gave the AI:*
-- *What it produced:*
-- *What I changed or overrode:*
+- *What I gave the AI:* The Embedding Model, Retrieval Approach, Architecture, and Evaluation Plan sections from `planning.md`.
+- *What it produced:* ChromaDB indexing and retrieval code using `all-MiniLM-L6-v2`, plus a Groq-based answer generation script with source citations.
+- *What I changed or overrode:* I added course-aware metadata filtering so questions about `CS 6601 Artificial Intelligence` would not drift into `Knowledge-Based AI` chunks. I also added `--dry-run` and a stricter grounding prompt so the retrieved context and source labels could be inspected before live API calls.
