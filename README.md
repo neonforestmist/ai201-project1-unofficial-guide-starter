@@ -68,15 +68,27 @@ Full sample chunks are saved in `documents/sample_chunks.md`. Five representativ
 
 ## Embedding Model
 
-<!-- Name the embedding model you used and explain your choice.
-     Then answer: if you were deploying this system for real users and cost wasn't a constraint,
-     what tradeoffs would you weigh in choosing a different model?
-     Consider: context length limits, multilingual support, accuracy on domain-specific text,
-     latency, and local vs. API-hosted. -->
+**Model used:** `all-MiniLM-L6-v2` through `sentence-transformers`. The retrieval pipeline in `retrieval.py` embeds the 984 chunks from `documents/chunks.jsonl`, stores them in a persistent ChromaDB collection named `omscs_ai_ml_course_advice`, and retrieves the top 5 chunks for each question. The ChromaDB files are stored locally in `chroma_db/`, which is ignored by git because it can be regenerated with:
 
-**Model used:**
+```bash
+python3 retrieval.py index
+```
 
-**Production tradeoff reflection:**
+I chose `all-MiniLM-L6-v2` because it is fast, local, free to run, and strong enough for a small English corpus of course reviews and Reddit comments. It also keeps the project simple: no paid embedding API is required, and the same laptop can rebuild the index from the saved chunks.
+
+The retrieval layer also applies a lightweight course-aware metadata filter when a question explicitly names a course code or course title. For example, a question about `CS 6601` or `Artificial Intelligence` filters to Artificial Intelligence chunks, which prevents the word "AI" from pulling in Knowledge-Based AI results too aggressively.
+
+**Retrieval check:** I ran the 5 evaluation questions from `planning.md` with top-k set to 5. The results are saved in `documents/retrieval_results.md`.
+
+| # | Question focus | Inferred filter | Retrieval quality |
+|---|----------------|-----------------|-------------------|
+| 1 | CS 7641 Machine Learning while working full-time | `cs7641` | Relevant ML workload/reports/grading chunks |
+| 2 | ML4T as a first OMSCS AI/ML course | `cs7646` | Relevant Reddit thread plus ML4T review chunks |
+| 3 | Background before Artificial Intelligence | `cs6601` | Relevant AI background/prerequisite chunks |
+| 4 | Knowledge-Based AI compared with engineering-heavy courses | `cs7637` | Relevant KBAI conceptual/writing/project chunks |
+| 5 | Recent NLP frustrations/changes | `cs7650` | Relevant NLP lecture, Meta lecture, assignment, and course-change chunks |
+
+**Production tradeoff reflection:** If this were deployed for real users and cost was not a constraint, I would compare this local MiniLM model against a larger hosted embedding model. The tradeoffs would be retrieval accuracy on messy student writing, longer context handling for very detailed reviews, latency, privacy, operational complexity, and cost. Multilingual support is not essential for this mostly English corpus, but it would matter if the guide expanded to international student forums or non-English program discussions.
 
 ---
 

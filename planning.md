@@ -50,6 +50,8 @@ Student-generated advice for choosing Georgia Tech OMSCS AI/ML-related courses. 
 
 **Production tradeoff reflection:** For a real advising tool, I would compare the local MiniLM model with a larger hosted embedding model that may handle longer, messier reviews and subtle wording better. I would weigh retrieval accuracy against latency, cost, privacy, and operational complexity. I would also consider context length, because some reviews contain background, workload, grading, and advice in one long post; a model that represents longer text well might reduce the need for aggressive splitting. Multilingual support is not a major requirement for this English-heavy corpus, but it would matter if the system expanded to international student forums.
 
+**Milestone 4 implementation note:** The final retrieval script uses `all-MiniLM-L6-v2`, stores 984 chunk embeddings in a persistent ChromaDB collection, and retrieves top-k 5 chunks with distance scores and source metadata. I added a course-aware metadata filter for questions that explicitly name a course or course code, because terms like "AI" can otherwise retrieve adjacent but wrong course pages such as KBAI.
+
 ---
 
 ## Evaluation Plan
