@@ -1,0 +1,32 @@
+Source: r/OMSCS - Machine Learning for Trading First OMSCS Course?
+Course/topic: CS 7646 first-course discussion
+Type: reddit
+URL: https://www.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/
+Fetched items: 9
+
+--- Item 1 ---
+Hi guys, I’m about to begin my first semester in the OMSCS program. I was thinking of taking Machine Learning for Trading (CS7646) as my first class as it hits the foundational requirement and is one of the ML specialization electives. It is also something I’m quite interested in, but I’m just not sure if it’s traditionally taken in one’s first semester. Please let me know if this is a good, bad, or indifferent decision. Thanks!!
+
+--- Item 2 ---
+I took that as my first class also back in Fall 2023. It was a good intro to ML and to the OMSCS program as a whole since it involves quizzes, writing, coding, and proctored exams.
+
+--- Item 3 ---
+I got recommended the book Python for finance, which is also in oreilly subscription by being a student at OMS. So far I like it. There is also investopedia articles, and OCW lectures being released publicly so you can try to get a hang of it before it starts. I personally don't know anything about investing so I'm getting up to speed in that.
+
+--- Item 4 ---
+Its a great course, it will be a good intro to assignment requirements and ml. Keep in mind to read and check all the requirements in each assignment. In that class I really understood how decision trees work
+
+--- Item 5 ---
+Definitely doable in the first semester and a lot of lessons learned will carry over into future semesters — report writing, experimentation principles, short feedback loops, delayed grading processes. The course itself is great for those who are new to STEM/CS/ML as it functions as a type of survey course. Do not plan too many other activities over the semester as the assignment guides and grading are extremely meticulous. You’ll need to reread the assignment guide multiple times and compare it against your deliverable, as point deductions are steep; not sure of the exact percentage but you can expect around ~5% deductions for failing to label graphs, or X- or Y-axis, and those deductions add up quick. Also assignment deadlines are strict. It’s a good course, but not an ideal first course if you tend to maintain a busy lifestyle outside of school. You’ll need to dedicate a significant amount of time ensuring that you understand the assignment expectations, requirements and grading procedure. Also, you’ll have to ‘trust’ in your ability to deliver as you could submit multiple assignments before receiving your feedback. There were 8 projects at the time that I took the course - 2 were hard, 3 were medium, and 3 were light/easy. Coding was not too bad but writing reports in jdf format could present a steep type of learning curve, especially for non-native English speakers. The middle and end of the semester tended to be the busiest.
+
+--- Item 6 ---
+Thanks for the details on your response. I am currently doing ML4T as my first course this semester. I just wanted to ask do the other courses you have experienced do the same delayed feedback/grading? This is a big disappointment for me and doesn’t allow for growth or improvement on previous assignments
+
+--- Item 7 ---
+Depends on the course. Gradescope-based courses typically allow (sometimes limited) resubmissions so that you can improve your assignment and resubmit. However, for most non-gradescope assignments, the feedback loop can vary. In most cases, expect between 2-3 weeks for feedback. In rare cases, you can get feedback in less than 2 or greater than 3 weeks. ML was the course I’ve taken with longest loops followed by ML4T.
+
+--- Item 8 ---
+ML4T was my first course as well, the class is well run and helpful TAs, also a great intro to ML as well in overall. Please checkout some posts here about tips and tricks to nail the class. Edited: Also check this out https://www.reddit.com/r/OMSCS/s/bjRqCc0hjp
+
+--- Item 9 ---
+I have taken it with DBS as my first two subjects. It’s a good course to take as an introduction to the program and ML. You can prepare for it by studying python, numpy, pandas and matplotlib. The lectures are available online, the past assignments too: https://lucylabs.gatech.edu/ml4t/ You can take a peek at the video lectures and assignments to have an idea about the course

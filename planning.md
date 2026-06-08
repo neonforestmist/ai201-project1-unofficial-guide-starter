@@ -32,11 +32,13 @@ Student-generated advice for choosing Georgia Tech OMSCS AI/ML-related courses. 
 
 ## Chunking Strategy
 
-**Chunk size:** I will chunk by natural review/comment boundaries first, not by a blind fixed character count. Each OMSCentral review or Reddit comment will become one candidate chunk when it is short enough. If a review/comment is longer than about 900 tokens, I will split it paragraph-by-paragraph into chunks around 650-900 tokens.
+**Chunk size:** I will chunk by natural review/comment boundaries first, not by a blind fixed character count. Each OMSCentral review or Reddit comment will become one candidate chunk when it is short enough. If a review/comment is longer than about 900 tokens, I will split it into sentence-aware chunks around 650-900 tokens. This is a small implementation adjustment from paragraph-only splitting because several source pages collapse review bodies into dense HTML text without reliable paragraph boundaries.
 
 **Overlap:** Short review/comment chunks will have no overlap because each one is already a complete opinion unit. Long split chunks will use about 100 tokens of overlap so that context such as the course name, assignment name, or conclusion is not lost across a boundary.
 
-**Reasoning:** The corpus is mostly opinion-heavy student writing rather than one continuous textbook-style document. A single review often contains the complete context for a student's background, workload estimate, rating, and advice, so preserving that boundary should make retrieval more useful than slicing every few hundred characters. For long reviews, paragraph-aware splitting keeps related complaints or recommendations together while preventing one very long review from crowding out other retrieved evidence. Each chunk will keep metadata for `source_name`, `url`, `course`, `source_type`, and `chunk_index` so the generation step can cite where an answer came from.
+**Reasoning:** The corpus is mostly opinion-heavy student writing rather than one continuous textbook-style document. A single review often contains the complete context for a student's background, workload estimate, rating, and advice, so preserving that boundary should make retrieval more useful than slicing every few hundred characters. For long reviews, sentence-aware splitting keeps related complaints or recommendations together while preventing one very long review from crowding out other retrieved evidence. Each chunk will keep metadata for `source_name`, `url`, `course`, `source_type`, and `chunk_index` so the generation step can cite where an answer came from.
+
+**Milestone 3 implementation note:** The final ingestion run produced 984 chunks across 10 sources, with no chunks over 900 tokens after adding source/course context.
 
 ---
 

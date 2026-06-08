@@ -30,22 +30,39 @@ This project covers student-generated advice for choosing Georgia Tech OMSCS AI/
 
 ---
 
+## Document Ingestion
+
+The Milestone 3 pipeline lives in `ingest.py`. It fetches all 10 sources from the source table, saves the raw fetched HTML under `documents/raw/`, extracts only the course review or Reddit comment bodies, and writes cleaned text files under `documents/clean/`.
+
+For OMSCentral, the script extracts substantive `article` review blocks that include rating, difficulty, and workload metadata. For Reddit, it fetches the old Reddit version of each thread because it exposes comment text in server-rendered HTML, then filters out subreddit boilerplate and very short/non-substantive bodies. The cleaning step removes HTML, navigation, repeated page chrome, base64-looking author hash artifacts, empty bodies, and common Reddit boilerplate while preserving course context, dates/terms, student opinions, ratings, difficulty, and workload estimates.
+
+The pipeline limits each large OMSCentral source to the first 120 substantive reviews so one very large page does not dominate the corpus. Natural Language Processing and the two Reddit threads had fewer available substantive items, so all extracted items were kept.
+
+---
+
 ## Chunking Strategy
 
-<!-- Describe your chunking approach with enough specificity that someone else could reproduce it.
-     Include:
-     - Chunk size (characters or tokens) and why that size fits your documents
-     - Overlap size and why (or why not) you used overlap
-     - Any preprocessing you did before chunking (e.g., stripping HTML, removing headers)
-     - What your final chunk count was across all documents -->
+**Chunk size:** Each OMSCentral review or Reddit comment is treated as one candidate chunk when it is at most 900 whitespace-estimated tokens. Longer reviews/comments are split into sentence-aware windows targeting about 760 tokens, with a hard maximum of 900 tokens after adding course/source context.
 
-**Chunk size:**
+**Overlap:** Short review/comment chunks use no overlap because each one is already a complete opinion unit. Long split chunks use a 100-token overlap so important context near a boundary, such as the course name, assignment, grade, or recommendation, is not lost.
 
-**Overlap:**
+**Why these choices fit your documents:** The documents are mostly standalone student reviews and Reddit comments, not long textbook chapters. Keeping each review/comment intact preserves a student's background, workload estimate, complaint, and recommendation in one retrievable unit. For long reviews, sentence-aware splitting keeps chunks readable while preventing one very long review from crowding out other evidence in retrieval.
 
-**Why these choices fit your documents:**
+**Preprocessing:** Raw HTML is saved before cleaning. Cleaned documents remove HTML tags, navigation, repeated page chrome, short boilerplate, Reddit subreddit-rule text, and OMSCentral author hash artifacts. Every chunk also receives metadata for `source_name`, `source_type`, `url`, `fetch_url`, `course`, `chunk_index`, `unit_index`, and `piece_index`, and the chunk text itself begins with the course/topic and source name.
 
-**Final chunk count:**
+**Final chunk count:** 984 chunks across 10 sources.
+
+### Sample Chunks
+
+Full sample chunks are saved in `documents/sample_chunks.md`. Five representative generated chunks:
+
+| Chunk ID | Source | Tokens | Excerpt |
+|---|---|---:|---|
+| `omscentral-machine-learning-reviews-0069` | OMSCentral - Machine Learning reviews | 311 | CS 7641 review describing the course as challenging, recommending starting projects immediately, and emphasizing that reports and plots consume the most time. |
+| `omscentral-machine-learning-for-trading-reviews-0041` | OMSCentral - Machine Learning for Trading reviews | 775 | CS 7646 review saying ML4T is a strong first-course option, while discussing project briefs, lectures, readings, reports, and hidden details to watch for. |
+| `omscentral-deep-learning-reviews-0074` | OMSCentral - Deep Learning reviews | 161 | CS 7643 review praising the professor and assignments while criticizing difficult quizzes, the final project fit, and weaker guest lecture material. |
+| `omscentral-reinforcement-learning-and-decision-making-reviews-0046` | OMSCentral - Reinforcement Learning and Decision Making reviews | 776 | CS 7642 review praising TA engagement, warning about hard Assignment 1 and Project 3, and describing infrastructure friction around RLlib and cloud setup. |
+| `omscentral-machine-learning-reviews-0004` | OMSCentral - Machine Learning reviews | 668 | CS 7641 review discussing report grading uncertainty, hidden-rubric frustration, overlap with AI, and a heavy time commitment despite liking the material. |
 
 ---
 

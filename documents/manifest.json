@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-06-08T02:54:08.208273+00:00",
+  "source_count": 10,
+  "total_chunks": 984,
+  "chunking": {
+    "strategy": "Review/comment boundary first; long items split by sentence-aware token windows.",
+    "max_tokens": 900,
+    "content_max_tokens_before_context": 860,
+    "target_tokens_for_long_splits": 760,
+    "overlap_tokens_for_long_splits": 100,
+    "max_items_per_source": 120
+  },
+  "sources": [
+    {
+      "name": "OMSCentral - Machine Learning reviews",
+      "course": "CS 7641 Machine Learning",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/machine-learning/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/machine-learning/reviews",
+      "raw_path": "documents/raw/omscentral-machine-learning-reviews.html",
+      "clean_path": "documents/clean/omscentral-machine-learning-reviews.txt",
+      "items": 120,
+      "chunks": 129
+    },
+    {
+      "name": "OMSCentral - Artificial Intelligence reviews",
+      "course": "CS 6601 Artificial Intelligence",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/artificial-intelligence/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/artificial-intelligence/reviews",
+      "raw_path": "documents/raw/omscentral-artificial-intelligence-reviews.html",
+      "clean_path": "documents/clean/omscentral-artificial-intelligence-reviews.txt",
+      "items": 120,
+      "chunks": 131
+    },
+    {
+      "name": "OMSCentral - Deep Learning reviews",
+      "course": "CS 7643 Deep Learning",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/deep-learning/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/deep-learning/reviews",
+      "raw_path": "documents/raw/omscentral-deep-learning-reviews.html",
+      "clean_path": "documents/clean/omscentral-deep-learning-reviews.txt",
+      "items": 120,
+      "chunks": 125
+    },
+    {
+      "name": "OMSCentral - Reinforcement Learning and Decision Making reviews",
+      "course": "CS 7642 Reinforcement Learning and Decision Making",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/reinforcement-learning-and-decision-making/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/reinforcement-learning-and-decision-making/reviews",
+      "raw_path": "documents/raw/omscentral-reinforcement-learning-and-decision-making-reviews.html",
+      "clean_path": "documents/clean/omscentral-reinforcement-learning-and-decision-making-reviews.txt",
+      "items": 120,
+      "chunks": 128
+    },
+    {
+      "name": "OMSCentral - Natural Language Processing reviews",
+      "course": "CS 7650 Natural Language Processing",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/natural-language-processing/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/natural-language-processing/reviews",
+      "raw_path": "documents/raw/omscentral-natural-language-processing-reviews.html",
+      "clean_path": "documents/clean/omscentral-natural-language-processing-reviews.txt",
+      "items": 52,
+      "chunks": 56
+    },
+    {
+      "name": "OMSCentral - Knowledge-Based AI reviews",
+      "course": "CS 7637 Knowledge-Based AI",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/knowledge-based-ai/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/knowledge-based-ai/reviews",
+      "raw_path": "documents/raw/omscentral-knowledge-based-ai-reviews.html",
+      "clean_path": "documents/clean/omscentral-knowledge-based-ai-reviews.txt",
+      "items": 120,
+      "chunks": 122
+    },
+    {
+      "name": "OMSCentral - Machine Learning for Trading reviews",
+      "course": "CS 7646 Machine Learning for Trading",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/machine-learning-for-trading/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/machine-learning-for-trading/reviews",
+      "raw_path": "documents/raw/omscentral-machine-learning-for-trading-reviews.html",
+      "clean_path": "documents/clean/omscentral-machine-learning-for-trading-reviews.txt",
+      "items": 120,
+      "chunks": 122
+    },
+    {
+      "name": "OMSCentral - AI, Ethics, and Society reviews",
+      "course": "CS 6603 AI, Ethics, and Society",
+      "type": "omscentral",
+      "url": "https://www.omscentral.com/courses/ai-ethics-and-society/reviews",
+      "fetch_url": "https://www.omscentral.com/courses/ai-ethics-and-society/reviews",
+      "raw_path": "documents/raw/omscentral-ai-ethics-and-society-reviews.html",
+      "clean_path": "documents/clean/omscentral-ai-ethics-and-society-reviews.txt",
+      "items": 120,
+      "chunks": 121
+    },
+    {
+      "name": "r/OMSCS - Has anyone actually had a good experience with OMSCS's workload?",
+      "course": "OMSCS workload discussion",
+      "type": "reddit",
+      "url": "https://www.reddit.com/r/OMSCS/comments/1rk9zh9/has_anyone_actually_had_a_good_experience_with/",
+      "fetch_url": "https://old.reddit.com/r/OMSCS/comments/1rk9zh9/has_anyone_actually_had_a_good_experience_with/",
+      "raw_path": "documents/raw/r-omscs-has-anyone-actually-had-a-good-experience-with-omscs-s-workload.html",
+      "clean_path": "documents/clean/r-omscs-has-anyone-actually-had-a-good-experience-with-omscs-s-workload.txt",
+      "items": 41,
+      "chunks": 41
+    },
+    {
+      "name": "r/OMSCS - Machine Learning for Trading First OMSCS Course?",
+      "course": "CS 7646 first-course discussion",
+      "type": "reddit",
+      "url": "https://www.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/",
+      "fetch_url": "https://old.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/",
+      "raw_path": "documents/raw/r-omscs-machine-learning-for-trading-first-omscs-course.html",
+      "clean_path": "documents/clean/r-omscs-machine-learning-for-trading-first-omscs-course.txt",
+      "items": 9,
+      "chunks": 9
+    }
+  ]
+}
