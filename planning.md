@@ -9,27 +9,24 @@
 
 ## Domain
 
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
+Student-generated advice for choosing Georgia Tech OMSCS AI/ML-related courses. The system will focus on practical questions that the official catalog does not answer well: real weekly workload, difficulty, prerequisite background, grading pain points, TA/course support, whether a course is good as a first OMSCS class, and whether it can be paired with another course. This knowledge is valuable because OMSCS students often work full-time and need realistic planning advice, but the most useful details are scattered across long review pages and Reddit threads rather than summarized in one official place.
 
 ---
 
 ## Documents
 
-<!-- List your specific sources: URLs, subreddit names, forum threads, or file descriptions.
-     Aim for at least 10 sources that together cover different subtopics or perspectives within your domain. -->
-
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | OMSCentral - Machine Learning reviews | Student reviews of CS 7641, especially workload, grading, prerequisites, and whether the course is manageable while working full-time. | https://www.omscentral.com/courses/machine-learning/reviews |
+| 2 | OMSCentral - Artificial Intelligence reviews | Student reviews of CS 6601, including reports on assignments, exams, math expectations, and course pacing. | https://www.omscentral.com/courses/artificial-intelligence/reviews |
+| 3 | OMSCentral - Deep Learning reviews | Student reviews of CS 7643, with comments on projects, quizzes, readings, group work, and expected weekly hours. | https://www.omscentral.com/courses/deep-learning/reviews |
+| 4 | OMSCentral - Reinforcement Learning and Decision Making reviews | Student reviews of CS 7642, focused on papers, projects, algorithms, workload, and difficulty. | https://www.omscentral.com/courses/reinforcement-learning-and-decision-making/reviews |
+| 5 | OMSCentral - Natural Language Processing reviews | Student reviews of CS 7650, including background expectations, lecture quality, exams, and recent course changes. | https://www.omscentral.com/courses/natural-language-processing/reviews |
+| 6 | OMSCentral - Knowledge-Based AI reviews | Student reviews of CS 7637, including writing-heavy workload, peer review, Ed participation, and perceived usefulness. | https://www.omscentral.com/courses/knowledge-based-ai/reviews |
+| 7 | OMSCentral - Machine Learning for Trading reviews | Student reviews of CS 7646, including whether it works as an intro ML course, Python/pandas expectations, and project pacing. | https://www.omscentral.com/courses/machine-learning-for-trading/reviews |
+| 8 | OMSCentral - AI, Ethics, and Society reviews | Student reviews of CS 6603, including workload, course design, assignments, and whether it is a light or pairable course. | https://www.omscentral.com/courses/ai-ethics-and-society/reviews |
+| 9 | r/OMSCS - Has anyone actually had a good experience with OMSCS's workload? | Reddit discussion comparing perceived workload across OMSCS courses and explaining why OMSCentral hour estimates can differ from individual experience. | https://www.reddit.com/r/OMSCS/comments/1rk9zh9/has_anyone_actually_had_a_good_experience_with/ |
+| 10 | r/OMSCS - Machine Learning for Trading First OMSCS Course? | Reddit thread about whether ML4T is suitable as a first OMSCS course, with comments on feedback delays, project cadence, and grading. | https://www.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/ |
 
 ---
 

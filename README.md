@@ -9,31 +9,24 @@
 
 ## Domain
 
-<!-- What topic or category of knowledge does your system cover?
-     Why is this knowledge valuable, and why is it hard to find through official channels?
-     Example: "Student reviews of CS professors at [university] — useful because official
-     course descriptions don't reflect teaching style, exam difficulty, or workload." -->
+This project covers student-generated advice for choosing Georgia Tech OMSCS AI/ML-related courses. It is useful because official course pages describe topics and credit hours, but they do not explain the lived student experience: realistic weekly workload, grading friction, TA support, prerequisite gaps, whether a course is good early in the program, or whether it can be paired with another class. The best answers live across long OMSCentral review pages and r/OMSCS threads, so a RAG system can make that scattered advice easier to search with grounded citations.
 
 ---
 
 ## Document Sources
 
-<!-- List every source you collected documents from.
-     Be specific: include URLs, subreddit names, forum thread titles, or file names.
-     Aim for variety — sources that together cover different subtopics or perspectives. -->
-
 | # | Source | Type | URL or file path |
 |---|--------|------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| 1 | OMSCentral - Machine Learning reviews | Course review page | https://www.omscentral.com/courses/machine-learning/reviews |
+| 2 | OMSCentral - Artificial Intelligence reviews | Course review page | https://www.omscentral.com/courses/artificial-intelligence/reviews |
+| 3 | OMSCentral - Deep Learning reviews | Course review page | https://www.omscentral.com/courses/deep-learning/reviews |
+| 4 | OMSCentral - Reinforcement Learning and Decision Making reviews | Course review page | https://www.omscentral.com/courses/reinforcement-learning-and-decision-making/reviews |
+| 5 | OMSCentral - Natural Language Processing reviews | Course review page | https://www.omscentral.com/courses/natural-language-processing/reviews |
+| 6 | OMSCentral - Knowledge-Based AI reviews | Course review page | https://www.omscentral.com/courses/knowledge-based-ai/reviews |
+| 7 | OMSCentral - Machine Learning for Trading reviews | Course review page | https://www.omscentral.com/courses/machine-learning-for-trading/reviews |
+| 8 | OMSCentral - AI, Ethics, and Society reviews | Course review page | https://www.omscentral.com/courses/ai-ethics-and-society/reviews |
+| 9 | r/OMSCS - Has anyone actually had a good experience with OMSCS's workload? | Reddit discussion thread | https://www.reddit.com/r/OMSCS/comments/1rk9zh9/has_anyone_actually_had_a_good_experience_with/ |
+| 10 | r/OMSCS - Machine Learning for Trading First OMSCS Course? | Reddit discussion thread | https://www.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/ |
 
 ---
 
