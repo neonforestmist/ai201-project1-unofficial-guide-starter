@@ -54,6 +54,18 @@ Student-generated advice for choosing Georgia Tech OMSCS AI/ML-related courses. 
 
 ---
 
+## Stretch Feature Plan
+
+**Hybrid search:** Add a BM25 keyword retriever over the saved chunks and combine its normalized score with the semantic score from `all-MiniLM-L6-v2`. I will compare semantic-only, BM25-only, and hybrid results on at least three queries and record which method gives the most useful chunks.
+
+**Chunking comparison:** Compare the implemented review/comment-boundary chunks against a fixed-window baseline on the same query set. The analysis will focus on whether each returned chunk is self-contained enough to answer the question without mixing or cutting off adjacent student reviews.
+
+**Metadata filtering:** Expose filters for course key and source type so a user can visibly restrict results to sources such as Reddit or OMSCentral.
+
+**Conversational memory:** Add a chat mode that stores recent turns and uses previous questions to resolve follow-up references, while still requiring the final answer to be grounded only in retrieved source chunks.
+
+---
+
 ## Evaluation Plan
 
 | # | Question | Expected answer |
@@ -95,8 +107,8 @@ The pipeline will keep source metadata attached from ingestion through generatio
 
 ## AI Tool Plan
 
-**Milestone 3 - Ingestion and chunking:** I will give Codex the Domain, Documents, and Chunking Strategy sections and ask it to implement a small ingestion script that fetches each URL, removes navigation/boilerplate, stores cleaned text under `documents/`, and chunks by review/comment boundaries with the long-review fallback described above. I expect it to produce Python functions such as `load_sources()`, `clean_html()`, and `chunk_documents()`. I will verify the output by reading at least 5 sample chunks and checking that each chunk contains real student advice plus correct source metadata.
+**Milestone 3 - Ingestion and chunking:** I will give an AI assistant the Domain, Documents, and Chunking Strategy sections and ask it to implement a small ingestion script that fetches each URL, removes navigation/boilerplate, stores cleaned text under `documents/`, and chunks by review/comment boundaries with the long-review fallback described above. I expect it to produce Python functions such as `load_sources()`, `clean_html()`, and `chunk_documents()`. I will verify the output by reading at least 5 sample chunks and checking that each chunk contains real student advice plus correct source metadata.
 
-**Milestone 4 - Embedding and retrieval:** I will give Codex the Retrieval Approach and Architecture sections and ask it to create a ChromaDB indexing script plus a retrieval function. I expect code that embeds chunks with `all-MiniLM-L6-v2`, persists the vector store, and returns top-k chunks with metadata and distance scores. I will verify it by running the 5 evaluation questions before generation and manually checking that the returned chunks are relevant.
+**Milestone 4 - Embedding and retrieval:** I will give an AI assistant the Retrieval Approach and Architecture sections and ask it to create a ChromaDB indexing script plus a retrieval function. I expect code that embeds chunks with `all-MiniLM-L6-v2`, persists the vector store, and returns top-k chunks with metadata and distance scores. I will verify it by running the 5 evaluation questions before generation and manually checking that the returned chunks are relevant.
 
-**Milestone 5 - Generation and interface:** I will give Codex the Evaluation Plan, Architecture, and grounding requirements from the project page. I expect it to build an `ask(question)` function that retrieves context, calls Groq's `llama-3.3-70b-versatile`, and returns an answer with source attribution. I will verify it by asking answerable questions and at least one question that the documents do not cover; the system should cite sources for supported answers and refuse to guess when the evidence is missing.
+**Milestone 5 - Generation and interface:** I will give an AI assistant the Evaluation Plan, Architecture, and grounding requirements from the project page. I expect it to build an `ask(question)` function that retrieves context, calls Groq's `llama-3.3-70b-versatile`, and returns an answer with source attribution. I will verify it by asking answerable questions and at least one question that the documents do not cover; the system should cite sources for supported answers and refuse to guess when the evidence is missing.

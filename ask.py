@@ -15,7 +15,7 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from dotenv import load_dotenv
 from groq import Groq
@@ -32,12 +32,14 @@ from retrieval import (
 GENERATION_RESULTS_PATH = Path("documents/generation_results.md")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 MAX_CONTEXT_CHARS_PER_SOURCE = 1200
+MAX_RELEVANT_DISTANCE = 0.62
 
 SYSTEM_PROMPT = """You are The Unofficial Guide, a careful RAG assistant for Georgia Tech OMSCS AI/ML course planning.
 
 Grounding rules:
 - Answer only from the retrieved source excerpts in the user message.
 - Do not use outside knowledge, guesses, or unstated assumptions.
+- Use conversation history only to understand follow-up references, not as evidence.
 - If the excerpts do not contain enough evidence, say that the retrieved documents do not contain enough information.
 - Summarize patterns across sources instead of treating one student's review as universal truth.
 - Cite every factual claim about courses with source labels like [S1] or [S2].
@@ -50,6 +52,12 @@ class SourceForPrompt:
     label: str
     chunk: RetrievedChunk
     excerpt: str
+
+
+@dataclass(frozen=True)
+class ChatTurn:
+    question: str
+    answer: str
 
 
 @dataclass(frozen=True)
@@ -105,8 +113,34 @@ def format_context(sources: List[SourceForPrompt]) -> str:
     return "\n\n".join(blocks)
 
 
-def build_user_prompt(question: str, sources: List[SourceForPrompt]) -> str:
-    return "\n\n".join(
+def format_history(history: Optional[List[ChatTurn]]) -> str:
+    if not history:
+        return ""
+
+    lines = []
+    for turn in history[-3:]:
+        lines.append(f"User: {turn.question}")
+        lines.append(f"Assistant: {excerpt(turn.answer, max_chars=500)}")
+    return "\n".join(lines)
+
+
+def build_user_prompt(
+    question: str,
+    sources: List[SourceForPrompt],
+    history: Optional[List[ChatTurn]] = None,
+) -> str:
+    parts = []
+    history_text = format_history(history)
+    if history_text:
+        parts.extend(
+            [
+                "Conversation history for follow-up resolution only:",
+                history_text,
+                "",
+            ]
+        )
+
+    parts.extend(
         [
             f"Question: {question}",
             "Retrieved source excerpts:",
@@ -114,6 +148,7 @@ def build_user_prompt(question: str, sources: List[SourceForPrompt]) -> str:
             "Write a concise, grounded answer with citations.",
         ]
     )
+    return "\n\n".join(parts)
 
 
 def source_list(sources: List[SourceForPrompt]) -> str:
@@ -127,10 +162,37 @@ def source_list(sources: List[SourceForPrompt]) -> str:
     return "\n".join(lines)
 
 
-def ask(question: str, top_k: int = DEFAULT_TOP_K, dry_run: bool = False) -> AnswerResult:
-    client = None if dry_run else load_api_client()
-    chunks = retrieve(question, top_k=top_k)
+def retrieval_query_for(question: str, history: Optional[List[ChatTurn]]) -> str:
+    if not history:
+        return question
+    prior_questions = [turn.question for turn in history[-2:]]
+    return " ".join(prior_questions + [question])
+
+
+def should_refuse(chunks: List[RetrievedChunk]) -> bool:
+    return not chunks or chunks[0].distance > MAX_RELEVANT_DISTANCE
+
+
+def refusal_answer() -> str:
+    return (
+        "I don't have enough information in the retrieved documents to answer that "
+        "question. The closest retrieved chunks are outside the supported OMSCS "
+        "AI/ML course-advice scope, so I will not guess."
+    )
+
+
+def ask(
+    question: str,
+    top_k: int = DEFAULT_TOP_K,
+    dry_run: bool = False,
+    history: Optional[List[ChatTurn]] = None,
+) -> AnswerResult:
+    retrieval_question = retrieval_query_for(question, history)
+    chunks = retrieve(retrieval_question, top_k=top_k)
     sources = sources_for_prompt(chunks)
+
+    if should_refuse(chunks):
+        return AnswerResult(question, refusal_answer(), sources, used_llm=False)
 
     if dry_run:
         answer = "\n\n".join(
@@ -139,18 +201,19 @@ def ask(question: str, top_k: int = DEFAULT_TOP_K, dry_run: bool = False) -> Ans
                 "System prompt:",
                 SYSTEM_PROMPT,
                 "User prompt:",
-                build_user_prompt(question, sources),
+                build_user_prompt(question, sources, history=history),
                 "Sources:",
                 source_list(sources),
             ]
         )
         return AnswerResult(question, answer, sources, used_llm=False)
 
+    client = load_api_client()
     completion = client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(question, sources)},
+            {"role": "user", "content": build_user_prompt(question, sources, history=history)},
         ],
         temperature=0.2,
         max_tokens=900,
@@ -218,6 +281,39 @@ def run_evaluation(top_k: int = DEFAULT_TOP_K, dry_run: bool = False) -> None:
     print(f"Wrote generation report to {GENERATION_RESULTS_PATH}")
 
 
+def run_chat(top_k: int = DEFAULT_TOP_K, dry_run: bool = False) -> None:
+    history: List[ChatTurn] = []
+    print('Start chatting. Type "exit" or "quit" to stop.')
+    while True:
+        question = input("You: ").strip()
+        if question.lower() in {"exit", "quit"}:
+            break
+        if not question:
+            continue
+
+        result = ask(question, top_k=top_k, dry_run=dry_run, history=history)
+        print_answer(result)
+        print()
+        history.append(ChatTurn(question=question, answer=result.answer))
+        history = history[-4:]
+
+
+def run_memory_demo(top_k: int = DEFAULT_TOP_K, dry_run: bool = False) -> None:
+    history: List[ChatTurn] = []
+    demo_questions = [
+        "Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?",
+        "What should I watch out for if I take it first?",
+    ]
+
+    for question in demo_questions:
+        print(f"You: {question}\n")
+        result = ask(question, top_k=top_k, dry_run=dry_run, history=history)
+        print_answer(result)
+        print("\n" + "-" * 80 + "\n")
+        history.append(ChatTurn(question=question, answer=result.answer))
+        history = history[-4:]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Ask grounded RAG questions.")
     parser.add_argument(
@@ -246,6 +342,12 @@ def main() -> None:
     try:
         if args.args and args.args[0] == "evaluate":
             run_evaluation(top_k=args.top_k, dry_run=args.dry_run)
+            return
+        if args.args and args.args[0] == "chat":
+            run_chat(top_k=args.top_k, dry_run=args.dry_run)
+            return
+        if args.args and args.args[0] == "memory-demo":
+            run_memory_demo(top_k=args.top_k, dry_run=args.dry_run)
             return
 
         question_args = args.args[1:] if args.args and args.args[0] == "ask" else args.args

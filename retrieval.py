@@ -3,6 +3,7 @@
 Run:
     python3 retrieval.py index
     python3 retrieval.py query "Is ML4T a good first OMSCS course?"
+    python3 retrieval.py query "Is ML4T a good first OMSCS course?" --source-type reddit
     python3 retrieval.py evaluate
 
 The ChromaDB store is written to chroma_db/, which is intentionally ignored by
@@ -118,7 +119,9 @@ class RetrievedChunk:
     chunk_id: str
     distance: float
     source_name: str
+    source_type: str
     course: str
+    course_key: str
     url: str
     text: str
 
@@ -191,6 +194,22 @@ def infer_course_key(question: str) -> Optional[str]:
     return None
 
 
+def build_where_filter(
+    course_key: Optional[str] = None, source_type: Optional[str] = None
+) -> Optional[dict]:
+    filters = []
+    if course_key:
+        filters.append({"course_key": course_key})
+    if source_type:
+        filters.append({"source_type": source_type})
+
+    if not filters:
+        return None
+    if len(filters) == 1:
+        return filters[0]
+    return {"$and": filters}
+
+
 def rebuild_index(chunks_path: Path = CHUNKS_PATH) -> int:
     chunks = load_chunks(chunks_path)
     model = load_model()
@@ -228,6 +247,8 @@ def retrieve(
     model: Optional[SentenceTransformer] = None,
     collection=None,
     use_course_filter: bool = True,
+    course_key: Optional[str] = None,
+    source_type: Optional[str] = None,
 ) -> List[RetrievedChunk]:
     model = model or load_model()
     if collection is None:
@@ -249,9 +270,16 @@ def retrieve(
         "include": ["documents", "metadatas", "distances"],
     }
 
-    course_key = infer_course_key(question) if use_course_filter else None
-    if course_key:
-        query_kwargs["where"] = {"course_key": course_key}
+    active_course_key = course_key
+    if not active_course_key and use_course_filter:
+        active_course_key = infer_course_key(question)
+
+    where_filter = build_where_filter(
+        course_key=active_course_key,
+        source_type=source_type,
+    )
+    if where_filter:
+        query_kwargs["where"] = where_filter
 
     results = collection.query(**query_kwargs)
 
@@ -270,7 +298,9 @@ def retrieve(
                 chunk_id=chunk_id,
                 distance=distance,
                 source_name=metadata["source_name"],
+                source_type=metadata["source_type"],
                 course=metadata["course"],
+                course_key=metadata["course_key"],
                 url=metadata["url"],
                 text=text,
             )
@@ -286,16 +316,22 @@ def excerpt(text: str, max_chars: int = 550) -> str:
 
 
 def print_results(
-    question: str, results: List[RetrievedChunk], use_course_filter: bool = True
+    question: str,
+    results: List[RetrievedChunk],
+    use_course_filter: bool = True,
+    course_key: Optional[str] = None,
+    source_type: Optional[str] = None,
 ) -> None:
     print(f"Question: {question}")
-    course_key = infer_course_key(question) if use_course_filter else None
-    if course_key:
-        print(f"Course filter: {course_key}")
+    active_course_key = course_key or (infer_course_key(question) if use_course_filter else None)
+    if active_course_key:
+        print(f"Course filter: {active_course_key}")
+    if source_type:
+        print(f"Source type filter: {source_type}")
     for result in results:
         print(
             f"\n{result.rank}. {result.chunk_id} | distance={result.distance:.4f}"
-            f"\n   {result.source_name} | {result.course}"
+            f"\n   {result.source_name} | {result.source_type} | {result.course}"
             f"\n   {result.url}"
             f"\n   {excerpt(result.text)}"
         )
@@ -380,6 +416,16 @@ def parse_args() -> argparse.Namespace:
     query_parser.add_argument("question", help="Question to retrieve evidence for.")
     query_parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K)
     query_parser.add_argument(
+        "--course-key",
+        choices=[course_key for course_key, _aliases in COURSE_ALIASES],
+        help="Filter to one known course key, such as cs7646 or cs6601.",
+    )
+    query_parser.add_argument(
+        "--source-type",
+        choices=["omscentral", "reddit"],
+        help="Filter to one source type so the effect of metadata filtering is visible.",
+    )
+    query_parser.add_argument(
         "--no-course-filter",
         action="store_true",
         help="Disable metadata filtering when the question names a course.",
@@ -412,8 +458,12 @@ def main() -> None:
                 args.question,
                 top_k=args.top_k,
                 use_course_filter=use_course_filter,
+                course_key=args.course_key,
+                source_type=args.source_type,
             ),
             use_course_filter=use_course_filter,
+            course_key=args.course_key,
+            source_type=args.source_type,
         )
     elif args.command == "evaluate":
         run_evaluation(top_k=args.top_k, use_course_filter=not args.no_course_filter)

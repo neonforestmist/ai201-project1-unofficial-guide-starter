@@ -1,9 +1,6 @@
 # The Unofficial Guide — Project 1
 
-> **How to use this template:**
-> Complete each section *after* you've built and tested the corresponding part of your system.
-> Do not write placeholder text — if a section isn't done yet, leave it blank and come back.
-> Every section below is required for submission. One-liners will not receive full credit.
+This submission implements a grounded RAG guide for Georgia Tech OMSCS AI/ML course planning. It includes ingestion/chunking, semantic retrieval, grounded generation, evaluation, a CLI query interface, and all Project 1 stretch features.
 
 ---
 
@@ -88,6 +85,48 @@ The retrieval layer also applies a lightweight course-aware metadata filter when
 | 4 | Knowledge-Based AI compared with engineering-heavy courses | `cs7637` | Relevant KBAI conceptual/writing/project chunks |
 | 5 | Recent NLP frustrations/changes | `cs7650` | Relevant NLP lecture, Meta lecture, assignment, and course-change chunks |
 
+### Retrieval Test Examples
+
+**Example 1**
+
+Query: `Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?`
+
+Top returned chunks:
+
+| Rank | Chunk | Source | Why it matters |
+|---:|---|---|---|
+| 1 | `r-omscs-machine-learning-for-trading-first-omscs-course-0001` | r/OMSCS - Machine Learning for Trading First OMSCS Course? | The thread asks directly whether ML4T is a good first semester course. |
+| 2 | `omscentral-machine-learning-for-trading-reviews-0091` | OMSCentral - Machine Learning for Trading reviews | The review calls the course a strong first step for AI/ML trading projects. |
+| 3 | `omscentral-machine-learning-for-trading-reviews-0111` | OMSCentral - Machine Learning for Trading reviews | The reviewer says ML4T was their first OMSCS course and describes it as an introduction to ML. |
+
+These chunks are relevant because they all discuss ML4T in the exact "first course / intro course" framing from the query, not just ML4T generally.
+
+**Example 2**
+
+Query: `What background do students recommend before taking Artificial Intelligence?`
+
+Top returned chunks:
+
+| Rank | Chunk | Source | Why it matters |
+|---:|---|---|---|
+| 1 | `omscentral-artificial-intelligence-reviews-0073` | OMSCentral - Artificial Intelligence reviews | Discusses challenging assignments/exams and the level of dedication needed. |
+| 2 | `omscentral-artificial-intelligence-reviews-0050` | OMSCentral - Artificial Intelligence reviews | Names programming, Bayesian probability, and linear algebra as important background. |
+| 3 | `omscentral-artificial-intelligence-reviews-0021` | OMSCentral - Artificial Intelligence reviews | Frames AI as a broad prerequisite-style course for later AI/ML classes. |
+
+These chunks are relevant because the course-aware filter keeps retrieval on CS 6601, and the returned reviews combine prerequisite knowledge with workload/preparation caveats.
+
+**Example 3**
+
+Query: `How do students describe Knowledge-Based AI compared with more engineering-oriented AI/ML courses?`
+
+Top returned chunks:
+
+| Rank | Chunk | Source | Why it matters |
+|---:|---|---|---|
+| 1 | `omscentral-knowledge-based-ai-reviews-0064` | OMSCentral - Knowledge-Based AI reviews | Describes KBAI as focused on agents that think like humans, with cognitive science and philosophy overlap. |
+| 2 | `omscentral-knowledge-based-ai-reviews-0074` | OMSCentral - Knowledge-Based AI reviews | Emphasizes learning how humans think and how AI systems can mimic that reasoning. |
+| 3 | `omscentral-knowledge-based-ai-reviews-0012` | OMSCentral - Knowledge-Based AI reviews | Describes the course as broadening perspective about AI agents. |
+
 **Production tradeoff reflection:** If this were deployed for real users and cost was not a constraint, I would compare this local MiniLM model against a larger hosted embedding model. The tradeoffs would be retrieval accuracy on messy student writing, longer context handling for very detailed reviews, latency, privacy, operational complexity, and cost. Multilingual support is not essential for this mostly English corpus, but it would matter if the guide expanded to international student forums or non-English program discussions.
 
 ---
@@ -113,6 +152,7 @@ python3 ask.py --dry-run "Is ML4T a good first OMSCS course?"
 ```text
 - Answer only from the retrieved source excerpts in the user message.
 - Do not use outside knowledge, guesses, or unstated assumptions.
+- Use conversation history only to understand follow-up references, not as evidence.
 - If the excerpts do not contain enough evidence, say that the retrieved documents do not contain enough information.
 - Summarize patterns across sources instead of treating one student's review as universal truth.
 - Cite every factual claim about courses with source labels like [S1] or [S2].
@@ -122,6 +162,73 @@ python3 ask.py --dry-run "Is ML4T a good first OMSCS course?"
 **How source attribution is surfaced in the response:** `ask.py` passes each retrieved chunk to the model with its label, chunk ID, distance, source name, course/topic, URL, and excerpt. The generated answer is required to cite those labels inline. After the answer, the CLI prints the full retrieved source list so a reader can map `[S1]` back to the original source URL and chunk ID.
 
 **Live generation status:** I ran `python3 ask.py evaluate` with a Groq API key stored in the ignored local `.env` file. Full generated answers and retrieved sources are saved in `documents/generation_results.md`.
+
+### Example System Responses
+
+**Example response 1**
+
+Question: `What do student reviews say about taking CS 7641 Machine Learning while working full-time?`
+
+System response:
+
+> Student reviews suggest that taking CS 7641 Machine Learning while working full-time can be challenging due to the heavy workload [S1, S2, S3, S4]. The course requires a significant time commitment, with reported workloads ranging from 14 to 20 hours per week [S1, S2, S3, S4]. Some students found the course rewarding and felt that it pushed them to really understand the material [S1, S4], while others found it overwhelming and frustrating [S2, S5]. To succeed in the course, students recommend planning their time well, starting assignments early, and being willing to learn outside of the course content [S1, S3, S4].
+>
+> Sources: [S1] OMSCentral - Machine Learning reviews, April 27, 2026; [S2] OMSCentral - Machine Learning reviews, May 13, 2024; [S3] OMSCentral - Machine Learning reviews, May 8, 2026; [S4] OMSCentral - Machine Learning reviews, May 6, 2024; [S5] OMSCentral - Machine Learning reviews, July 24, 2024
+
+**Example response 2**
+
+Question: `Is Machine Learning for Trading a reasonable first OMSCS AI/ML course, and what should a new student watch out for?`
+
+System response:
+
+> Taking Machine Learning for Trading (CS 7646) as a first OMSCS AI/ML course can be a reasonable decision [S1]. Several students have taken this course as their first class and found it to be a good introduction to ML and the OMSCS program [S2, S4, S5]. However, students should be aware that the course workload can vary, with some projects taking significantly more time to complete than others [S5]. Additionally, the tests can be challenging [S5].
+>
+> Sources: [S1] r/OMSCS - Machine Learning for Trading First OMSCS Course?; [S2] OMSCentral - Machine Learning for Trading reviews; [S4] r/OMSCS - Machine Learning for Trading First OMSCS Course?; [S5] OMSCentral - Machine Learning for Trading reviews
+
+**Out-of-scope refusal**
+
+Question: `What are the dorms like at Stanford?`
+
+System response:
+
+> I don't have enough information in the retrieved documents to answer that question. The closest retrieved chunks are outside the supported OMSCS AI/ML course-advice scope, so I will not guess.
+
+### Query Interface
+
+The query interface is the CLI in `ask.py`.
+
+Inputs:
+
+- Positional question text, for example `python3 ask.py "Is ML4T a good first OMSCS course?"`
+- `--top-k`, which controls how many chunks are retrieved before generation
+- `--dry-run`, which prints retrieved context and prompts without calling Groq
+- Commands: `evaluate` for the five test questions, `chat` for an interactive multi-turn session, and `memory-demo` for a built-in two-turn conversational memory demo
+
+Outputs:
+
+- A grounded answer or refusal
+- Inline source labels such as `[S1]`
+- A retrieved source list mapping labels to source name, course/topic, chunk ID, and URL
+
+Sample transcript:
+
+```text
+$ python3 ask.py "Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?"
+Question: Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?
+
+Based on the retrieved source excerpts, taking Machine Learning for Trading (CS 7646) as a first OMSCS AI/ML course can be a reasonable decision. Several students have taken this course as their first class and found it to be a good introduction to ML and the OMSCS program [S3, S4, S5]. However, it can be time-consuming, with some projects requiring much more work than others [S5].
+
+Sources:
+[S1] r/OMSCS - Machine Learning for Trading First OMSCS Course?
+[S2] OMSCentral - Machine Learning for Trading reviews
+[S3] OMSCentral - Machine Learning for Trading reviews
+[S4] r/OMSCS - Machine Learning for Trading First OMSCS Course?
+[S5] OMSCentral - Machine Learning for Trading reviews
+
+Retrieved sources:
+[S1] r/OMSCS - Machine Learning for Trading First OMSCS Course? | CS 7646 first-course discussion | r-omscs-machine-learning-for-trading-first-omscs-course-0001 | https://www.reddit.com/r/OMSCS/comments/1mkkwfh/machine_learning_for_trading_first_omscs_course/
+[S2] OMSCentral - Machine Learning for Trading reviews | CS 7646 Machine Learning for Trading | omscentral-machine-learning-for-trading-reviews-0091 | https://www.omscentral.com/courses/machine-learning-for-trading/reviews
+```
 
 ---
 
@@ -160,6 +267,92 @@ python3 ask.py --dry-run "Is ML4T a good first OMSCS course?"
 
 ---
 
+## Stretch Features
+
+### Hybrid Search
+
+Source: `hybrid_search.py`
+
+The hybrid retriever combines semantic retrieval and BM25 keyword retrieval over the same chunk corpus. Semantic retrieval uses the existing ChromaDB cosine distance from `all-MiniLM-L6-v2`; BM25 tokenizes each candidate chunk, computes standard term-frequency/inverse-document-frequency scores, and rewards exact query terms. For each query, both score types are normalized over the union of semantic and BM25 candidates, then combined as:
+
+```text
+hybrid_score = 0.65 * normalized_semantic_score + 0.35 * normalized_bm25_score
+```
+
+The full comparison report is saved in `documents/hybrid_comparison.md`.
+
+| Query | Semantic-only returned | BM25-only returned | Hybrid returned | Which performed better |
+|---|---|---|---|---|
+| ML4T as a first course | `r-omscs-machine-learning-for-trading-first-omscs-course-0001` | `omscentral-machine-learning-for-trading-reviews-0091` | `omscentral-machine-learning-for-trading-reviews-0091`, then the Reddit first-course thread | Hybrid: it kept the direct Reddit thread and boosted reviews with exact "first course" language. |
+| Recent NLP frustrations | `omscentral-natural-language-processing-reviews-0045` | `omscentral-natural-language-processing-reviews-0029` | `omscentral-natural-language-processing-reviews-0029`, `0014`, `0036` | Hybrid: it stayed in the NLP course area while rewarding exact terms like Meta, lectures, tests, and instructions. |
+| KBAI compared with engineering-heavy courses | `omscentral-knowledge-based-ai-reviews-0064` | `omscentral-knowledge-based-ai-reviews-0006` | `omscentral-knowledge-based-ai-reviews-0064`, `0049`, `0023` | Semantic and hybrid were strongest: hybrid preserved the conceptual/cognitive-science match and added chunks with writing/coding language. |
+
+Demo command:
+
+```bash
+python3 hybrid_search.py query "Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?" --top-k 3
+```
+
+### Chunking Strategy Comparison
+
+Source: `chunking_comparison.py`
+
+I compared the implemented review/comment-boundary strategy against a fixed-window baseline on the same query set. The baseline splits cleaned documents into 450-token windows with 75-token overlap. Both strategies use `all-MiniLM-L6-v2` embeddings and the same course-aware filter when a query names a course. The full report is saved in `documents/chunking_comparison.md`.
+
+| Query | Boundary chunk top result | Fixed-window top result | Which performed better |
+|---|---|---|---|
+| ML4T first-course advice | `r-omscs-machine-learning-for-trading-first-omscs-course-0001` at cosine `0.808` | `fixed-omscentral-machine-learning-for-trading-reviews-0081` at cosine `0.718` | Boundary chunks: the top results were complete first-course comments/reviews. |
+| AI prerequisite background | `omscentral-artificial-intelligence-reviews-0073` at cosine `0.594` | `fixed-omscentral-artificial-intelligence-reviews-0005` at cosine `0.556` | Boundary chunks: a single student's background, prerequisite advice, and workload caveat stayed together. |
+| KBAI conceptual vs engineering-heavy | `omscentral-knowledge-based-ai-reviews-0064` at cosine `0.652` | `fixed-omscentral-knowledge-based-ai-reviews-0055` at cosine `0.630` | Boundary chunks: the full review preserved writing, coding, cognitive science, philosophy, and project-style context. |
+
+### Metadata Filtering
+
+Source: `retrieval.py`
+
+The retriever supports visible metadata filters through `--course-key` and `--source-type`. This lets a query target a course and/or source family.
+
+Demo commands:
+
+```bash
+python3 retrieval.py query "Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?" --top-k 3 --source-type reddit
+python3 retrieval.py query "Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?" --top-k 3 --source-type omscentral
+```
+
+Visible effect:
+
+| Filter | Top returned chunk |
+|---|---|
+| `--source-type reddit` | `r-omscs-machine-learning-for-trading-first-omscs-course-0001` from the r/OMSCS thread |
+| `--source-type omscentral` | `omscentral-machine-learning-for-trading-reviews-0091` from OMSCentral reviews |
+
+### Conversational Memory
+
+Source: `ask.py`
+
+The `chat` and `memory-demo` commands keep recent user/assistant turns. The previous questions are added to the retrieval query so follow-up references such as "it" can resolve to the course from the previous turn, while the generation prompt still treats retrieved chunks, not conversation history, as the evidence.
+
+Demo command:
+
+```bash
+python3 ask.py memory-demo
+```
+
+Demo transcript:
+
+```text
+You: Is Machine Learning for Trading a reasonable first OMSCS AI/ML course?
+
+Answer: Taking Machine Learning for Trading (CS 7646) as a first OMSCS AI/ML course can be a reasonable decision [S1]. Several students have taken this course as their first class and found it to be a good introduction to ML and the OMSCS program [S3, S4, S5].
+
+You: What should I watch out for if I take it first?
+
+Answer: If you take Machine Learning for Trading (CS 7646) as your first OMSCS AI/ML course, you should watch out for the time commitment required for the projects [S2, S4]. It's also recommended to prepare by studying Python, NumPy, Pandas, and Matplotlib [S5].
+```
+
+The second answer resolves "it" to Machine Learning for Trading and retrieves CS 7646 sources, not unrelated course chunks.
+
+---
+
 ## AI Usage
 
 **Instance 1**
@@ -173,3 +366,9 @@ python3 ask.py --dry-run "Is ML4T a good first OMSCS course?"
 - *What I gave the AI:* The Embedding Model, Retrieval Approach, Architecture, and Evaluation Plan sections from `planning.md`.
 - *What it produced:* ChromaDB indexing and retrieval code using `all-MiniLM-L6-v2`, plus a Groq-based answer generation script with source citations.
 - *What I changed or overrode:* I added course-aware metadata filtering so questions about `CS 6601 Artificial Intelligence` would not drift into `Knowledge-Based AI` chunks. I also added `--dry-run` and a stricter grounding prompt so the retrieved context and source labels could be inspected before live API calls.
+
+**Instance 3**
+
+- *What I gave the AI:* The Project 1 grading rubric rows for required README evidence and the stretch features.
+- *What it produced:* Draft implementations for hybrid search, chunking comparison, metadata filtering, conversational memory, and README rubric evidence.
+- *What I changed or overrode:* I verified each feature from the command line, changed the chunking comparison to use the same course-aware filtering as the main retriever, fixed a numeric scoring warning in the comparison script, and kept the API key only in the ignored local `.env` file.
